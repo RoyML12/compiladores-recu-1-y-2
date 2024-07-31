@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Analizador</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 900px;
+            margin: 50px auto;
+            background: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        textarea, input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+        button {
+            display: block;
+            width: 100%;
+            background: #007BFF;
+            color: white;
+            border: none;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .results {
+            display: flex;
+            justify-content: space-between;
+        }
+        .column {
+            width: 30%;
+        }
+        .column h2 {
+            color: #333;
+            border-bottom: 2px solid #007BFF;
+            padding-bottom: 5px;
+        }
+        .column ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .column ul li {
+            background: #f9f9f9;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 5px;
+        }
+        .column ul li:nth-child(odd) {
+            background: #e9e9e9;
+        }
+        h2 {
+            text-align: center;
+            color: #007BFF;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Analizador</h1>
+        <form id="codeForm">
+            <textarea id="codeInput" name="code" placeholder="Enter your code here..."></textarea><br>
+            <button type="submit">Analyze</button>
+        </form>
+        <div class="results">
+            <div class="column">
+                <h2>Errores</h2>
+                <ul id="errorsList"></ul>
+            </div>
+            <div class="column">
+                <h2>Sintaxis</h2>
+                <ul id="syntaxList"></ul>
+            </div>
+            <div class="column">
+                <h2>Tokens</h2>
+                <ul id="tokensList"></ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('codeForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+            fetch('/analyze', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                const tokensList = document.getElementById('tokensList');
+                const errorsList = document.getElementById('errorsList');
+                const syntaxList = document.getElementById('syntaxList');
+
+                tokensList.innerHTML = '';
+                errorsList.innerHTML = '';
+                syntaxList.innerHTML = '';
+
+                if (data.errors.length > 0) {
+                    data.errors.forEach(error => {
+                        const li = document.createElement('li');
+                        li.classList.add('error');
+                        li.textContent = error;
+                        errorsList.appendChild(li);
+                    });
+                } else {
+                    const li = document.createElement('li');
+                    li.textContent = 'No Errors';
+                    errorsList.appendChild(li);
+                }
+
+                if (data.syntaxs.length > 0) {
+                    data.syntaxs.forEach(syntax => {
+                        const li = document.createElement('li');
+                        li.classList.add('syntax');
+                        li.textContent = syntax;
+                        syntaxList.appendChild(li);
+                    });
+                } else {
+                    const li = document.createElement('li');
+                    li.textContent = 'No Structure';
+                    syntaxList.appendChild(li);
+                }
+
+                if (data.tokens.length > 0) {
+                    data.tokens.forEach(token => {
+                        const li = document.createElement('li');
+                        li.classList.add('token');
+                        li.textContent = token;
+                        tokensList.appendChild(li);
+                    });
+                } else {
+                    const li = document.createElement('li');
+                    li.textContent = 'No Tokens';
+                    tokensList.appendChild(li);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    </script>
+</body>
+</html>
